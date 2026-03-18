@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from escpos.printer import Network, Usb
 
 from lib.config import Config
@@ -50,11 +48,6 @@ class ThermalPrinter:
             self.printer.text(str(text))
 
         self.printer.ln()
-        self.printer.set(
-            normal_textsize=True, align="left", bold=False, underline=False
-        )
-        self.printer.textln("*" * self.config.line_width)
-        self.printer.textln(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         self.printer.cut()
 
     def _load_printer(self) -> Network | Usb | None:
