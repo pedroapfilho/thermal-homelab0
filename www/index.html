@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>thermal-homelab0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-900">
+
+<nav class="bg-gray-900 text-white px-6 py-3 flex items-center">
+    <span class="font-mono text-sm tracking-tight">thermal-homelab0</span>
+</nav>
+
+<main class="max-w-xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+
+        <h1 class="text-base font-semibold text-gray-800">Print</h1>
+
+        <!-- Toolbar -->
+        <div class="flex flex-wrap items-center gap-1" id="editorButtons">
+
+            <!-- Text formatting -->
+            <button class="toolbar-btn font-semibold"          data-action="H1"          title="Header 1">H1</button>
+            <button class="toolbar-btn text-sm"                data-action="H2"          title="Header 2">H2</button>
+            <button class="toolbar-btn font-bold"              data-action="B"           title="Bold">B</button>
+            <button class="toolbar-btn underline"              data-action="U"           title="Underline">U</button>
+
+            <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
+
+            <!-- Alignment -->
+            <button class="toolbar-btn" data-action="alignLeft"   title="Align left">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm0 3h8v1.5H2zm0 3h10v1.5H2z"/></svg>
+            </button>
+            <button class="toolbar-btn" data-action="alignCenter" title="Align center">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm2 3h8v1.5H4zm1 3h6v1.5H5z"/></svg>
+            </button>
+            <button class="toolbar-btn" data-action="alignRight"  title="Align right">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm4 3h8v1.5H6zm2 3h6v1.5H8z"/></svg>
+            </button>
+
+            <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
+
+            <!-- Inserts -->
+            <button class="toolbar-btn" data-action="qr"  title="QR code">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm1.5 1.5v2h2v-2h-2zm4.5-1.5h5v5H8V2zm1.5 1.5v2h2v-2h-2zM2 9h5v5H2V9zm1.5 1.5v2h2v-2h-2zM11 9h1.5v1.5H11zm0 3H9.5V10.5H11V12H9.5V13.5H11V12zm1.5-1.5H14V12h-1.5v-1.5zm0 3H14v1.5h-1.5V13.5zm-3 0H9.5V15H8V13.5h1.5V12H11v1.5z"/></svg>
+            </button>
+            <button class="toolbar-btn font-mono text-xs" data-action="L-"  title="Line of dashes">— —</button>
+            <button class="toolbar-btn font-mono text-xs" data-action="L*"  title="Line of asterisks">* *</button>
+
+            <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
+
+            <!-- Lists -->
+            <button class="toolbar-btn" data-action="checkList"  title="Check list">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4.5l1.5 1.5 2.5-3 1 1-3.5 4L1 5.5l1-1zM7.5 5h7V6.5h-7zm0 4.5h7V11h-7zM2 10.5l1.5 1.5 2.5-3 1 1-3.5 4L1 12l1-1.5z"/></svg>
+            </button>
+            <button class="toolbar-btn" data-action="bulletList" title="Bullet list">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><circle cx="2.5" cy="5" r="1.25"/><path d="M5.5 4.25h8v1.5h-8zm-3 4.5A1.25 1.25 0 115.75 10 1.25 1.25 0 012.5 8.75zm3 .75h8v1.5h-8z"/></svg>
+            </button>
+            <button class="toolbar-btn font-mono text-xs" data-action="numberList" title="Numbered list">1.</button>
+
+            <!-- Template — pushed to the right -->
+            <div class="flex-1"></div>
+            <button class="toolbar-btn text-xs text-gray-500" data-action="T1" data-template="[align=center]# Title\n\nMessage" title="Template">T1</button>
+        </div>
+
+        <!-- Textarea -->
+        <div>
+            <label for="markdown" class="sr-only">Markdown content</label>
+            <textarea
+                rows="10"
+                name="markdown"
+                id="markdown"
+                class="w-full font-mono text-sm rounded-lg border border-gray-200 bg-gray-50 p-3 resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder-gray-400"
+                placeholder="Start typing Markdown…"
+                autofocus
+                required
+                aria-label="Markdown content to print"
+            ></textarea>
+        </div>
+
+        <!-- Print button -->
+        <button
+            id="print"
+            type="button"
+            class="w-full bg-gray-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-gray-700 active:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+            Print
+        </button>
+
+        <!-- Status -->
+        <div id="status" role="status" aria-live="polite"></div>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-4">⌘ + Enter to print</p>
+
+</main>
+
+<style>
+    .toolbar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        height: 2rem;
+        padding: 0 0.375rem;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        cursor: pointer;
+        transition: background 0.1s, border-color 0.1s;
+    }
+    .toolbar-btn:hover  { background: #f3f4f6; border-color: #d1d5db; }
+    .toolbar-btn:active { background: #e5e7eb; }
+</style>
+
+<script>
+    const textarea  = document.getElementById('markdown');
+    const printBtn  = document.getElementById('print');
+    const statusDiv = document.getElementById('status');
+
+    function injectText(text) {
+        const start = textarea.selectionStart;
+        textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(start);
+        textarea.setSelectionRange(start + text.length, start + text.length);
+        textarea.focus();
+    }
+
+    function encloseSelectedText(characters) {
+        const start    = textarea.selectionStart;
+        const end      = textarea.selectionEnd;
+        const selected = textarea.value.substring(start, end);
+        const enclosed = characters + selected + characters;
+        textarea.value = textarea.value.substring(0, start) + enclosed + textarea.value.substring(end);
+        textarea.setSelectionRange(start + characters.length, start + characters.length + selected.length);
+        textarea.focus();
+    }
+
+    function convertToList(type) {
+        const start = textarea.selectionStart;
+        const end   = textarea.selectionEnd;
+        const lines = textarea.value.substring(start, end).split('\n').map((line, i) =>
+            type === '1' ? `${i + 1}. ${line}` : `${type} ${line}`
+        );
+        textarea.value = textarea.value.substring(0, start) + lines.join('\n') + textarea.value.substring(end);
+        textarea.focus();
+    }
+
+    document.getElementById('editorButtons').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        e.preventDefault();
+
+        switch (btn.dataset.action) {
+            case 'H1':          injectText('# ');             break;
+            case 'H2':          injectText('## ');            break;
+            case 'B':           encloseSelectedText('**');    break;
+            case 'U':           encloseSelectedText('__');    break;
+            case 'alignLeft':   injectText('[align=left]');   break;
+            case 'alignCenter': injectText('[align=center]'); break;
+            case 'alignRight':  injectText('[align=right]');  break;
+            case 'qr':          injectText('[qr=]');          break;
+            case 'L-':          injectText('[effect=line--]');break;
+            case 'L*':          injectText('[effect=line-*]');break;
+            case 'checkList':   convertToList('[ ]');         break;
+            case 'bulletList':  convertToList('*');           break;
+            case 'numberList':  convertToList('1');           break;
+            case 'T1':          textarea.value = btn.dataset.template.replaceAll('\\n', '\n'); break;
+        }
+    });
+
+    function setStatus(message, ok) {
+        statusDiv.textContent = message;
+        statusDiv.className   = ok
+            ? 'text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 border border-green-200'
+            : 'text-sm px-3 py-2 rounded-lg bg-red-50 text-red-700 border border-red-200';
+    }
+
+    async function handlePrint() {
+        const markdown = textarea.value.trim();
+        if (!markdown) return;
+
+        printBtn.disabled    = true;
+        printBtn.textContent = 'Printing…';
+        statusDiv.textContent = '';
+        statusDiv.className   = '';
+
+        try {
+            const response = await fetch('/print', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:    new URLSearchParams({ markdown }),
+            });
+
+            const result = await response.json();
+            response.ok
+                ? setStatus('Sent to printer.', true)
+                : setStatus('Error: ' + (result.detail || 'Failed to print'), false);
+        } catch (err) {
+            setStatus('Error: ' + err.message, false);
+        } finally {
+            printBtn.disabled    = false;
+            printBtn.textContent = 'Print';
+        }
+    }
+
+    printBtn.addEventListener('click', handlePrint);
+
+    textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            handlePrint();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+[project]
+name = "thermal-homelab0"
+version = "1.0.0"
+description = "Markdown thermal printer web service"
+requires-python = ">=3.12"
+dependencies = [
+    "python-escpos[all]>=3.1",
+    "python-dotenv>=1.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "python-multipart>=0.0.18",
+]
+
+[tool.uv]
+dev-dependencies = []

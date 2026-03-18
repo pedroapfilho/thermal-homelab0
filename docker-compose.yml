@@ -1,0 +1,33 @@
+services:
+  thermal-homelab0:
+    build: .
+    container_name: thermal-homelab0
+    # Override the Dockerfile CMD to strip SSL — Traefik handles TLS termination.
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    # USB passthrough requires privileged + device mount.
+    # This service must be deployed with `docker compose up`, NOT `docker stack deploy`.
+    # Docker Swarm does not support the `devices` key and will silently drop it.
+    privileged: true
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    user: root
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thermal-homelab0.rule=Host(`thermal.homelab0.local`)"
+      - "traefik.http.routers.thermal-homelab0.entrypoints=websecure"
+      - "traefik.http.services.thermal-homelab0.loadbalancer.server.port=8000"
+      - "traefik.docker.network=traefik_proxy"
+    deploy:
+      restart_policy:
+        condition: any
+
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
