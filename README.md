@@ -26,11 +26,11 @@ Fill in your printer's connection details. For USB, find the vendor/product IDs:
 - **macOS:** `ioreg -p IOUSB -l -w 0 | grep -A 5 "idVendor\|idProduct"`
 
 ```dotenv
-MARKY_TYPE=usb
-MARKY_VENDOR_ID=0x04b8
-MARKY_PRODUCT_ID=0x0e27
-MARKY_MAX_LINES=30
-MARKY_LINE_WIDTH=48
+THERMAL_TYPE=usb
+THERMAL_VENDOR_ID=0x04b8
+THERMAL_PRODUCT_ID=0x0e27
+THERMAL_MAX_LINES=30
+THERMAL_LINE_WIDTH=48
 ```
 
 ### 2. Run with Docker (Linux)

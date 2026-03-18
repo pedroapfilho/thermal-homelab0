@@ -1,6 +1,7 @@
 import re
 from copy import copy
-from lib.formatting import PrinterTextFormat, PrinterText
+
+from lib.formatting import PrinterText, PrinterTextFormat
 
 
 class MarkdownConverter:
@@ -22,11 +23,13 @@ class MarkdownConverter:
     def _new_line(self) -> PrinterText:
         return PrinterText("\n", format=self._reset_format())
 
-    def _is_format(self, name: str, start: bool, current_position: int, chars: list[str]) -> bool:
-        if name.lower() == 'bold':
-            c = '*'
-        elif name.lower() == 'underline':
-            c = '_'
+    def _is_format(
+        self, name: str, start: bool, current_position: int, chars: list[str]
+    ) -> bool:
+        if name.lower() == "bold":
+            c = "*"
+        elif name.lower() == "underline":
+            c = "_"
         else:
             return False
 
@@ -61,21 +64,21 @@ class MarkdownConverter:
         if effect:
             input_line = effect.group(1) * self.max_line_width
 
-        alignment = re.match(r'^\[align=(.*?)]', input_line)
+        alignment = re.match(r"^\[align=(.*?)]", input_line)
         if alignment:
-            if alignment.group(1) in ['left', 'right', 'center']:
+            if alignment.group(1) in ["left", "right", "center"]:
                 current_format.align = alignment.group(1)
-            input_line = input_line[len(alignment.group(0)):].strip()
+            input_line = input_line[len(alignment.group(0)) :].strip()
 
-        qr = re.match(r'^\[qr=(.*?)]', input_line)
+        qr = re.match(r"^\[qr=(.*?)]", input_line)
         if qr:
             return [PrinterText(qr.group(1), format=copy(current_format), qr=True)]
 
-        if input_line.startswith('## '):
+        if input_line.startswith("## "):
             input_line = input_line[3:]
             current_format.height = 2
             current_format.width = 2
-        elif input_line.startswith('# '):
+        elif input_line.startswith("# "):
             input_line = input_line[2:]
             current_format.height = 3
             current_format.width = 3
@@ -87,7 +90,7 @@ class MarkdownConverter:
         for i, c in chars_iter:
             toggled = False
 
-            for style in ['bold', 'underline']:
+            for style in ["bold", "underline"]:
                 current_state = getattr(current_format, style)
                 if self._is_format(style, not current_state, i, chars):
                     setattr(current_format, style, not current_state)
@@ -103,7 +106,9 @@ class MarkdownConverter:
         output.append(self._new_line())
         return output
 
-    def _fix_line_width(self, data: list[PrinterText], max_width: int) -> list[PrinterText]:
+    def _fix_line_width(
+        self, data: list[PrinterText], max_width: int
+    ) -> list[PrinterText]:
         output: list[PrinterText] = []
         lines = self._split_tokens_to_lines(data)
 
@@ -120,7 +125,7 @@ class MarkdownConverter:
 
             while tokens_to_wrap:
                 word = self._get_next_stream(tokens_to_wrap)
-                tokens_to_wrap = tokens_to_wrap[len(word):]
+                tokens_to_wrap = tokens_to_wrap[len(word) :]
 
                 if word[0].is_whitespace() and current_len == 0:
                     continue
@@ -154,7 +159,9 @@ class MarkdownConverter:
 
         return output
 
-    def _split_tokens_to_lines(self, data: list[PrinterText]) -> list[list[PrinterText]]:
+    def _split_tokens_to_lines(
+        self, data: list[PrinterText]
+    ) -> list[list[PrinterText]]:
         lines: list[list[PrinterText]] = []
         line: list[PrinterText] = []
         for text in data:

@@ -161,13 +161,13 @@ All config comes from environment variables (loaded via `python-dotenv` from `.e
 
 | Variable | Purpose |
 |---|---|
-| `MARKY_TYPE` | `usb` or `network` |
-| `MARKY_VENDOR_ID` | USB vendor ID (hex, e.g. `0x04b8`) |
-| `MARKY_PRODUCT_ID` | USB product ID (hex, e.g. `0x0e27`) |
-| `MARKY_IP` | Printer IP (network mode only) |
-| `MARKY_PORT` | Printer port, usually `9100` (network mode only) |
-| `MARKY_LINE_WIDTH` | Characters per line (48 for 80mm, 32 for 58mm) |
-| `MARKY_MAX_LINES` | Truncate after this many lines |
+| `THERMAL_TYPE` | `usb` or `network` |
+| `THERMAL_VENDOR_ID` | USB vendor ID (hex, e.g. `0x04b8`) |
+| `THERMAL_PRODUCT_ID` | USB product ID (hex, e.g. `0x0e27`) |
+| `THERMAL_IP` | Printer IP (network mode only) |
+| `THERMAL_PORT` | Printer port, usually `9100` (network mode only) |
+| `THERMAL_LINE_WIDTH` | Characters per line (48 for 80mm, 32 for 58mm) |
+| `THERMAL_MAX_LINES` | Truncate after this many lines |
 
 Network printers (Ethernet or Wi-Fi) are simpler to configure — no USB driver concerns. The printer exposes a raw TCP socket on port 9100.
 

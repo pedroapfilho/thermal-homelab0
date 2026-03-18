@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class PrinterTextFormat:
-    align: str = 'left'
+    align: str = "left"
     underline: bool = False
     bold: bool = False
     height: int = 1
@@ -25,10 +25,10 @@ class PrinterText:
     qr: bool = False
 
     def is_newline(self) -> bool:
-        return self.text in ['\n', '\r']
+        return self.text in ["\n", "\r"]
 
     def is_word_terminator(self) -> bool:
-        return self.text == ' '
+        return self.text == " "
 
     def is_whitespace(self) -> bool:
         return self.text.isspace()
