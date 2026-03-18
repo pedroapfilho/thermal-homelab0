@@ -13,6 +13,8 @@ services:
     user: root
     env_file:
       - .env
+    volumes:
+      - ./logs:/app/logs
     ports:
       - "8000:8000"
     networks:
