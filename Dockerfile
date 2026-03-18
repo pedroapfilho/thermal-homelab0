@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml uv.lock ./
-RUN UV_SYSTEM_PYTHON=1 uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev
 
 COPY . .
 
@@ -29,4 +29,4 @@ EXPOSE 8000
 
 # docker-compose overrides this to plain HTTP (Traefik handles TLS).
 # When run directly, start.py generates certs if missing and serves HTTPS.
-CMD ["python", "start.py"]
+CMD ["uv", "run", "python", "start.py"]
