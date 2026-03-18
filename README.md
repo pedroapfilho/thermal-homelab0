@@ -49,9 +49,10 @@ Requires [uv](https://docs.astral.sh/uv/) and `libusb` (`brew install libusb`).
 
 ```bash
 uv sync
-uv run uvicorn main:app --host 0.0.0.0 --port 8000 \
-  --ssl-keyfile certs/key.pem --ssl-certfile certs/cert.pem
+uv run python start.py
 ```
+
+Certs are generated automatically on first run into `certs/` (gitignored).
 
 ## Usage
 

@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcups2-dev \
     python3-dev \
     gcc \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml uv.lock ./
@@ -16,8 +17,16 @@ RUN uv sync --frozen --no-dev --system
 
 COPY . .
 
-RUN mkdir -p data
+RUN mkdir -p data certs \
+    && openssl req -x509 -newkey rsa:4096 -days 3650 -nodes \
+       -keyout certs/key.pem \
+       -out    certs/cert.pem \
+       -subj   "/CN=thermal-homelab0" \
+       -addext "subjectAltName=DNS:localhost,DNS:thermal.homelab0.local" \
+       2>/dev/null
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--ssl-keyfile", "certs/key.pem", "--ssl-certfile", "certs/cert.pem"]
+# docker-compose overrides this to plain HTTP (Traefik handles TLS).
+# When run directly, start.py generates certs if missing and serves HTTPS.
+CMD ["python", "start.py"]
