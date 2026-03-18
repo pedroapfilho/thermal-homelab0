@@ -16,18 +16,15 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - traefik_proxy
+      - traefik_compose
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.thermal-homelab0.rule=Host(`thermal.homelab0.local`)"
       - "traefik.http.routers.thermal-homelab0.entrypoints=websecure"
       - "traefik.http.services.thermal-homelab0.loadbalancer.server.port=8000"
-      - "traefik.docker.network=traefik_proxy"
-    deploy:
-      restart_policy:
-        condition: any
+      - "traefik.docker.network=traefik_compose"
 
 networks:
-  traefik_proxy:
-    name: traefik_proxy
+  traefik_compose:
+    name: traefik_compose
     external: true
