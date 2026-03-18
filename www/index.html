@@ -259,7 +259,8 @@
                 if (qr) {
                     const url = qr[1] || '';
                     if (!url) return `<div class="receipt-line ${align}"><span class="receipt-qr">▣ QR: (empty)</span></div>`;
-                    return `<div class="receipt-line ${align}"><canvas class="qr-canvas" data-url="${escapeHtml(url)}" width="120" height="120"></canvas></div>`;
+                    const justify = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+                    return `<div class="receipt-line" style="display:flex;justify-content:${justify}"><canvas class="qr-canvas" data-url="${escapeHtml(url)}" width="120" height="120"></canvas></div>`;
                 }
 
                 // headings
