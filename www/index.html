@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>thermal-homelab0</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
         <script>
             tailwind.config = {
                 theme: {
@@ -256,7 +257,9 @@
                 // [qr=...]
                 const qr = line.match(/^\[qr=(.*?)\]/);
                 if (qr) {
-                    return `<div class="receipt-line ${align}"><span class="receipt-qr">▣ QR: ${escapeHtml(qr[1] || '…')}</span></div>`;
+                    const url = qr[1] || '';
+                    if (!url) return `<div class="receipt-line ${align}"><span class="receipt-qr">▣ QR: (empty)</span></div>`;
+                    return `<div class="receipt-line ${align}"><canvas class="qr-canvas" data-url="${escapeHtml(url)}" width="120" height="120"></canvas></div>`;
                 }
 
                 // headings
@@ -267,13 +270,28 @@
                 return `<div class="${cls}">${parseInline(line)}</div>`;
             }
 
-            function updatePreview() {
+            async function updatePreview() {
                 const md = textarea.value;
                 if (!md.trim()) {
                     previewEl.innerHTML = '<span class="text-gray-300 text-xs italic">Start typing to see a preview…</span>';
                     return;
                 }
+
                 previewEl.innerHTML = md.split('\n').map(renderLine).join('');
+
+                // Render any QR codes into their canvas elements.
+                for (const canvas of previewEl.querySelectorAll('.qr-canvas')) {
+                    try {
+                        await QRCode.toCanvas(canvas, canvas.dataset.url, {
+                            width: 120, margin: 1,
+                            color: { dark: '#000000', light: '#ffffff' },
+                        });
+                    } catch {
+                        const ctx = canvas.getContext('2d');
+                        ctx.font = '10px monospace';
+                        ctx.fillText('invalid URL', 4, 14);
+                    }
+                }
             }
 
             // Debounced live update while typing
