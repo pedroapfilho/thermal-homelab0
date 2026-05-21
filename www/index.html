@@ -98,7 +98,7 @@
                 <!-- Preview -->
                 <div class="border-t border-gray-100 pt-4">
                     <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Preview</p>
-                    <div class="overflow-x-auto">
+                    <div class="flex justify-center">
                         <div id="preview" class="receipt">
                             <span class="text-gray-300 text-xs italic">Start typing to see a preview…</span>
                         </div>
@@ -136,15 +136,16 @@
                 border: 1px solid #e5e7eb;
                 border-radius: 0.5rem;
                 padding: 32px 16px;
-                min-width: 48ch;
-                width: fit-content;
+                /* content-box so the 48ch width refers to usable text area, not including padding */
+                box-sizing: content-box;
+                width: 48ch;
                 max-height: 400px;
                 overflow-y: auto;
                 /* subtle receipt shadow */
                 box-shadow: 0 1px 3px rgba(0,0,0,0.06), 2px 0 6px rgba(0,0,0,0.04), -2px 0 6px rgba(0,0,0,0.04);
             }
 
-            .receipt-line        { white-space: pre; }
+            .receipt-line        { white-space: pre-wrap; overflow-wrap: anywhere; }
             .receipt-line.center { text-align: center; }
             .receipt-line.right  { text-align: right; }
             .receipt-line.h1     { font-size: 2em; font-weight: bold; line-height: 1.2; }
@@ -165,7 +166,23 @@
             const statusDiv = document.getElementById('status');
             const previewEl = document.getElementById('preview');
 
-            const LINE_WIDTH = 48;
+            // Replaced at runtime from GET /config so the preview tracks THERMAL_LINE_WIDTH.
+            let lineWidth = 48;
+
+            async function loadConfig() {
+                try {
+                    const res = await fetch('/config');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (Number.isInteger(data.line_width) && data.line_width > 0) {
+                        lineWidth = data.line_width;
+                        previewEl.style.width = `${lineWidth}ch`;
+                        updatePreview();
+                    }
+                } catch {
+                    // Keep the 48-column fallback.
+                }
+            }
 
             // ── editor helpers ───────────────────────────────────────────
 
@@ -244,7 +261,7 @@
                 // [effect=line-X]
                 const effect = line.match(/^\[effect=line-(.)\]/);
                 if (effect) {
-                    return `<div class="receipt-line">${escapeHtml(effect[1].repeat(LINE_WIDTH))}</div>`;
+                    return `<div class="receipt-line">${escapeHtml(effect[1].repeat(lineWidth))}</div>`;
                 }
 
                 // [align=...]
@@ -346,6 +363,8 @@
                     handlePrint();
                 }
             });
+
+            loadConfig();
         </script>
     </body>
 </html>

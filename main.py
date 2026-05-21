@@ -8,7 +8,12 @@ from pathlib import Path
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import FileResponse
 
+from lib.config import ConfigHandler
+
 app = FastAPI()
+
+# Load once at startup so a bad .env fails fast instead of breaking the first print.
+CONFIG = ConfigHandler.load()
 
 DATA_DIR = Path(__file__).parent / "data"
 LOGS_DIR = Path(__file__).parent / "logs"
@@ -38,6 +43,11 @@ def log_print(ip: str, markdown: str, *, success: bool, error: str = "") -> None
 @app.get("/")
 async def read_index() -> FileResponse:
     return FileResponse("www/index.html")
+
+
+@app.get("/config")
+async def read_config() -> dict[str, int]:
+    return {"line_width": CONFIG.line_width}
 
 
 @app.post("/print")
