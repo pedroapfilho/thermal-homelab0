@@ -91,10 +91,14 @@ class MarkdownConverter:
             toggled = False
 
             for style in ["bold", "underline"]:
-                current_state = getattr(current_format, style)
+                is_bold = style == "bold"
+                current_state = current_format.bold if is_bold else current_format.underline
                 if self._is_format(style, not current_state, i, chars):
-                    setattr(current_format, style, not current_state)
-                    next(chars_iter, None)
+                    if is_bold:
+                        current_format.bold = not current_state
+                    else:
+                        current_format.underline = not current_state
+                    _ = next(chars_iter, None)
                     toggled = True
                     break
 
@@ -180,5 +184,5 @@ class MarkdownConverter:
             if letter.is_word_terminator():
                 break
         if len(word) > 1 and word[-1].is_newline():
-            word.pop()
+            _ = word.pop()
         return word

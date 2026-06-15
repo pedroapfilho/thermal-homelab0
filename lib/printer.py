@@ -1,4 +1,4 @@
-from escpos.printer import Network, Usb
+from escpos.printer import Network, Usb  # pyright: ignore[reportMissingTypeStubs]
 
 from lib.config import Config
 from lib.formatting import PrinterText
@@ -33,7 +33,7 @@ class ThermalPrinter:
                 continue
             elif text.qr:
                 self.printer.set(align=text.format.align)
-                self.printer.qr(str(text), size=8)
+                self.printer.qr(str(text), size=8)  # pyright: ignore[reportUnknownMemberType]
                 continue
 
             self.printer.set(

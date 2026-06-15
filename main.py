@@ -4,13 +4,18 @@ import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from lib.config import ConfigHandler
 
-app = FastAPI()
+app = FastAPI(
+    title="Thermal Homelab",
+    description="Markdown thermal printer web service",
+    version="1.0.0",
+)
 
 # Load once at startup so a bad .env fails fast instead of breaking the first print.
 CONFIG = ConfigHandler.load()
@@ -37,12 +42,22 @@ def log_print(ip: str, markdown: str, *, success: bool, error: str = "") -> None
         f"{status}\n\n"
     )
     with LOG_FILE.open("a", encoding="utf-8") as f:
-        f.write(entry)
+        _ = f.write(entry)
 
 
 @app.get("/")
 async def read_index() -> FileResponse:
     return FileResponse("www/index.html")
+
+
+@app.get("/app.js", include_in_schema=False)
+async def read_app_js() -> FileResponse:
+    return FileResponse("www/app.js", media_type="application/javascript")
+
+
+@app.get("/openapi", include_in_schema=False)
+async def read_openapi() -> JSONResponse:
+    return JSONResponse(app.openapi())
 
 
 @app.get("/config")
@@ -51,7 +66,9 @@ async def read_config() -> dict[str, int]:
 
 
 @app.post("/print")
-async def print_markdown(request: Request, markdown: str = Form(...)) -> dict[str, str]:
+async def print_markdown(
+    request: Request, markdown: Annotated[str, Form()]
+) -> dict[str, str]:
     client_ip = request.client.host if request.client else "unknown"
 
     # Write to a unique temp file so concurrent requests don't clobber each other.
@@ -59,7 +76,7 @@ async def print_markdown(request: Request, markdown: str = Form(...)) -> dict[st
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".md", dir=DATA_DIR, delete=False
         ) as f:
-            f.write(markdown)
+            _ = f.write(markdown)
             temp_path = f.name
     except OSError as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {e}") from e

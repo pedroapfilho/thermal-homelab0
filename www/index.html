@@ -12,6 +12,7 @@
                     extend: {
                         fontFamily: {
                             mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+                            receipt: ["Courier New", "Courier", "monospace"],
                         },
                     },
                 },
@@ -109,262 +110,30 @@
             <p class="text-center text-xs text-gray-400 mt-4">⌘ + Enter to print</p>
         </main>
 
-        <style>
-            .toolbar-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 2rem;
-                height: 2rem;
-                padding: 0 0.375rem;
-                font-size: 0.75rem;
-                border-radius: 0.375rem;
-                border: 1px solid #e5e7eb;
-                background: white;
-                color: #374151;
-                cursor: pointer;
-                transition: background 0.1s, border-color 0.1s;
-            }
-            .toolbar-btn:hover  { background: #f3f4f6; border-color: #d1d5db; }
-            .toolbar-btn:active { background: #e5e7eb; }
+        <style type="text/tailwindcss">
+            @layer components {
+                .toolbar-btn {
+                    @apply inline-flex items-center justify-center min-w-8 h-8 px-1.5 text-xs rounded-md
+                           border border-gray-200 bg-white text-gray-700 cursor-pointer
+                           transition-colors duration-100 hover:bg-gray-100 hover:border-gray-300 active:bg-gray-200;
+                }
 
-            .receipt {
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 13px;
-                line-height: 1.5;
-                background: #fff;
-                border: 1px solid #e5e7eb;
-                border-radius: 0.5rem;
-                padding: 32px 16px;
-                /* content-box so the 48ch width refers to usable text area, not including padding */
-                box-sizing: content-box;
-                width: 48ch;
-                max-height: 400px;
-                overflow-y: auto;
-                /* subtle receipt shadow */
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06), 2px 0 6px rgba(0,0,0,0.04), -2px 0 6px rgba(0,0,0,0.04);
-            }
+                /* box-content so the 48ch width refers to usable text area, not including padding */
+                .receipt {
+                    @apply font-receipt text-[13px] leading-normal bg-white border border-gray-200 rounded-lg
+                           px-4 py-8 box-content w-[48ch] max-h-[400px] overflow-y-auto
+                           shadow-[0_1px_3px_rgba(0,0,0,0.06),2px_0_6px_rgba(0,0,0,0.04),-2px_0_6px_rgba(0,0,0,0.04)];
+                }
 
-            .receipt-line        { white-space: pre-wrap; overflow-wrap: anywhere; }
-            .receipt-line.center { text-align: center; }
-            .receipt-line.right  { text-align: right; }
-            .receipt-line.h1     { font-size: 2em; font-weight: bold; line-height: 1.2; }
-            .receipt-line.h2     { font-size: 1.5em; font-weight: bold; line-height: 1.2; }
-            .receipt-qr {
-                display: inline-block;
-                border: 1px dashed #aaa;
-                padding: 4px 10px;
-                font-size: 11px;
-                color: #666;
-                border-radius: 2px;
+                .receipt-line        { @apply whitespace-pre-wrap [overflow-wrap:anywhere]; }
+                .receipt-line.center { @apply text-center; }
+                .receipt-line.right  { @apply text-right; }
+                .receipt-line.h1     { @apply text-[2em] font-bold leading-[1.2]; }
+                .receipt-line.h2     { @apply text-[1.5em] font-bold leading-[1.2]; }
+                .receipt-qr          { @apply inline-block border border-dashed border-[#aaa] px-2.5 py-1 text-[11px] text-[#666] rounded-sm; }
             }
         </style>
 
-        <script>
-            const textarea  = document.getElementById('markdown');
-            const printBtn  = document.getElementById('print');
-            const statusDiv = document.getElementById('status');
-            const previewEl = document.getElementById('preview');
-
-            // Replaced at runtime from GET /config so the preview tracks THERMAL_LINE_WIDTH.
-            let lineWidth = 48;
-
-            async function loadConfig() {
-                try {
-                    const res = await fetch('/config');
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    if (Number.isInteger(data.line_width) && data.line_width > 0) {
-                        lineWidth = data.line_width;
-                        previewEl.style.width = `${lineWidth}ch`;
-                        updatePreview();
-                    }
-                } catch {
-                    // Keep the 48-column fallback.
-                }
-            }
-
-            // ── editor helpers ───────────────────────────────────────────
-
-            function injectText(text) {
-                const start = textarea.selectionStart;
-                textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(start);
-                textarea.setSelectionRange(start + text.length, start + text.length);
-                textarea.focus();
-            }
-
-            function encloseSelectedText(characters) {
-                const start    = textarea.selectionStart;
-                const end      = textarea.selectionEnd;
-                const selected = textarea.value.substring(start, end);
-                const enclosed = characters + selected + characters;
-                textarea.value = textarea.value.substring(0, start) + enclosed + textarea.value.substring(end);
-                textarea.setSelectionRange(start + characters.length, start + characters.length + selected.length);
-                textarea.focus();
-            }
-
-            function convertToList(type) {
-                const start = textarea.selectionStart;
-                const end   = textarea.selectionEnd;
-                const lines = textarea.value.substring(start, end).split('\n').map((line, i) =>
-                    type === '1' ? `${i + 1}. ${line}` : `${type} ${line}`
-                );
-                textarea.value = textarea.value.substring(0, start) + lines.join('\n') + textarea.value.substring(end);
-                textarea.focus();
-            }
-
-            document.getElementById('editorButtons').addEventListener('click', (e) => {
-                const btn = e.target.closest('[data-action]');
-                if (!btn) return;
-                e.preventDefault();
-                switch (btn.dataset.action) {
-                    case 'H1':          injectText('# ');             break;
-                    case 'H2':          injectText('## ');            break;
-                    case 'B':           encloseSelectedText('**');    break;
-                    case 'U':           encloseSelectedText('__');    break;
-                    case 'alignLeft':   injectText('[align=left]');   break;
-                    case 'alignCenter': injectText('[align=center]'); break;
-                    case 'alignRight':  injectText('[align=right]');  break;
-                    case 'qr':          injectText('[qr=]');          break;
-                    case 'L-':          injectText('[effect=line--]');break;
-                    case 'L*':          injectText('[effect=line-*]');break;
-                    case 'checkList':   convertToList('[ ]');         break;
-                    case 'bulletList':  convertToList('*');           break;
-                    case 'numberList':  convertToList('1');           break;
-                    case 'T1':          textarea.value = btn.dataset.template.replaceAll('\\n', '\n'); break;
-                }
-                updatePreview();
-            });
-
-            // ── preview renderer ─────────────────────────────────────────
-
-            function escapeHtml(str) {
-                return str
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-            }
-
-            function parseInline(text) {
-                // Escape HTML first so content inside tags is safe, then apply formatting.
-                return escapeHtml(text)
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/__(.+?)__/g,      '<u>$1</u>');
-            }
-
-            function renderLine(raw) {
-                if (raw.trim() === '') return '<div class="receipt-line">&nbsp;</div>';
-
-                let line  = raw;
-                let align = 'left';
-
-                // [effect=line-X]
-                const effect = line.match(/^\[effect=line-(.)\]/);
-                if (effect) {
-                    return `<div class="receipt-line">${escapeHtml(effect[1].repeat(lineWidth))}</div>`;
-                }
-
-                // [align=...]
-                const alignMatch = line.match(/^\[align=(left|center|right)\]/);
-                if (alignMatch) {
-                    align = alignMatch[1];
-                    line  = line.slice(alignMatch[0].length).trim();
-                }
-
-                // [qr=...]
-                const qr = line.match(/^\[qr=(.*?)\]/);
-                if (qr) {
-                    const url = qr[1] || '';
-                    if (!url) return `<div class="receipt-line ${align}"><span class="receipt-qr">▣ QR: (empty)</span></div>`;
-                    const justify = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
-                    return `<div class="receipt-line" style="display:flex;justify-content:${justify}"><canvas class="qr-canvas" data-url="${escapeHtml(url)}" width="120" height="120"></canvas></div>`;
-                }
-
-                // headings
-                let cls = `receipt-line ${align}`;
-                if (line.startsWith('## ')) { line = line.slice(3); cls += ' h2'; }
-                else if (line.startsWith('# ')) { line = line.slice(2); cls += ' h1'; }
-
-                return `<div class="${cls}">${parseInline(line)}</div>`;
-            }
-
-            async function updatePreview() {
-                const md = textarea.value;
-                if (!md.trim()) {
-                    previewEl.innerHTML = '<span class="text-gray-300 text-xs italic">Start typing to see a preview…</span>';
-                    return;
-                }
-
-                previewEl.innerHTML = md.split('\n').map(renderLine).join('');
-
-                // Render any QR codes into their canvas elements.
-                for (const canvas of previewEl.querySelectorAll('.qr-canvas')) {
-                    try {
-                        await QRCode.toCanvas(canvas, canvas.dataset.url, {
-                            width: 120, margin: 1,
-                            color: { dark: '#000000', light: '#ffffff' },
-                        });
-                    } catch {
-                        const ctx = canvas.getContext('2d');
-                        ctx.font = '10px monospace';
-                        ctx.fillText('invalid URL', 4, 14);
-                    }
-                }
-            }
-
-            // Debounced live update while typing
-            let previewTimer;
-            textarea.addEventListener('input', () => {
-                clearTimeout(previewTimer);
-                previewTimer = setTimeout(updatePreview, 120);
-            });
-
-            // ── print ────────────────────────────────────────────────────
-
-            function setStatus(message, ok) {
-                statusDiv.textContent = message;
-                statusDiv.className   = ok
-                    ? 'text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 border border-green-200'
-                    : 'text-sm px-3 py-2 rounded-lg bg-red-50 text-red-700 border border-red-200';
-            }
-
-            async function handlePrint() {
-                const markdown = textarea.value.trim();
-                if (!markdown) return;
-
-                printBtn.disabled    = true;
-                printBtn.textContent = 'Printing…';
-                statusDiv.textContent = '';
-                statusDiv.className   = '';
-
-                try {
-                    const response = await fetch('/print', {
-                        method:  'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body:    new URLSearchParams({ markdown }),
-                    });
-                    const result = await response.json();
-                    response.ok
-                        ? setStatus('Sent to printer.', true)
-                        : setStatus('Error: ' + (result.detail || 'Failed to print'), false);
-                } catch (err) {
-                    setStatus('Error: ' + err.message, false);
-                } finally {
-                    printBtn.disabled    = false;
-                    printBtn.textContent = 'Print';
-                }
-            }
-
-            printBtn.addEventListener('click', handlePrint);
-
-            textarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    handlePrint();
-                }
-            });
-
-            loadConfig();
-        </script>
+        <script src="/app.js" defer></script>
     </body>
 </html>

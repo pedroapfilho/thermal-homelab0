@@ -24,7 +24,7 @@ def ensure_certs() -> None:
     CERTS_DIR.mkdir(exist_ok=True)
     print("Generating self-signed certificates…", flush=True)
 
-    subprocess.run(
+    _ = subprocess.run(
         [
             "openssl", "req", "-x509", "-newkey", "rsa:4096",
             "-days", "3650", "-nodes",

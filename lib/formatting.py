@@ -32,6 +32,3 @@ class PrinterText:
 
     def is_whitespace(self) -> bool:
         return self.text.isspace()
-
-    def __str__(self) -> str:
-        return self.text

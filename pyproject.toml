@@ -11,5 +11,10 @@ dependencies = [
     "python-multipart>=0.0.18",
 ]
 
-[tool.uv]
-dev-dependencies = []
+[dependency-groups]
+dev = []
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
